@@ -1,0 +1,32 @@
+FROM index.tenxcloud.com/tenxcloud/centos
+RUN wget http://repo.mysql.com/mysql-community-release-el7-5.noarch.rpm
+RUN rpm -ivh mysql-community-release-el7-5.noarch.rpm
+RUN yum -y update
+RUN yum -y install mysql-server mysql-client
+
+RUN wget http://erlang.org/download/otp_src_18.3.tar.gz
+
+RUN yum install -y ncurses-devel
+RUN yum install -y openssl
+RUN yum install -y git
+RUN yum install -y openssl-devel
+RUN yum install -y libyaml-devel
+RUN yum install -y expat-devel
+RUN yum install -y gcc-c++
+
+RUN git clone https://github.com/elixir-lang/elixir.git
+RUN tar -xzvf otp_src_18.3.tar.gz
+
+
+RUN yum remove -y fakesystemd
+RUN yum install -y systemd systemd-libs
+
+
+RUN cd otp_src_18.3; ./configure --with-ssl=/usr/lib/ssl ;make ;make install; cd -
+RUN cd elixir;make clean test
+
+
+COPY ./rock_ssh/*  /root/.ssh/
+COPY ./run.sh /srv/source/
+WORKDIR /srv/source/
+ENTRYPOINT ["bash", "run.sh"]
